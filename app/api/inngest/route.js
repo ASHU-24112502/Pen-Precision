@@ -1,12 +1,12 @@
 import { serve } from "inngest/next";
-import { inngest } from "@/config/inngest";
 import {
+  inngest,
   syncUserCreation,
   syncUserDeletion,
   syncUserUpdation,
 } from "@/config/inngest";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export const { GET, POST, PUT } = serve({

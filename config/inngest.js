@@ -1,65 +1,67 @@
 import { Inngest } from "inngest";
 import connectDB from "./db";
+import User from "./models/User"; // ✅ make sure this path is correct
 
-// Create a client to send and receive events
-export const inngest = new Inngest({ id: "pen-precision-next" });
+// Create Inngest client
+export const inngest = new Inngest({
+  id: "pen-precision-next",
+});
 
-//Inngest Fun to save user data
-
+// ✅ CREATE USER
 export const syncUserCreation = inngest.createFunction(
-  {
-    id: "pen-precision/Sync-User-from-Clerk",
-  },
+  { id: "pen-precision-sync-user-create" },
   { event: "clerk/user.created" },
-    async ({ event }) => {
+  async ({ event }) => {
+    const {
+      id,
+      first_name,
+      last_name,
+      email_addresses,
+      image_url,
+    } = event.data;
 
-        const {id,first_name, last_name, email_address, image_url} = event.data;
+    await connectDB();
 
-        const userData = {
-            _id : id,
-            name : first_name + " " + last_name,
-            email : email_address[0].email_address,
-            imageUrl : image_url
-        }
-
-        await connectDB();
-        await user.create(userData);
-
+    await User.create({
+      _id: id,
+      name: `${first_name ?? ""} ${last_name ?? ""}`,
+      email: email_addresses?.[0]?.email_address,
+      imageUrl: image_url,
     });
+  }
+);
 
-    //Inngest Fun to update user data 
+// ✅ UPDATE USER
+export const syncUserUpdation = inngest.createFunction(
+  { id: "pen-precision-sync-user-update" },
+  { event: "clerk/user.updated" },
+  async ({ event }) => {
+    const {
+      id,
+      first_name,
+      last_name,
+      email_addresses,
+      image_url,
+    } = event.data;
 
-    export const syncUserUpdation = inngest.createFunction()(
-    {
-        id: "Update-User-from-Clerk",
-    },
-    { event: "clerk/user.updated" },
-    async ({ event }) => {
+    await connectDB();
 
-        const {id,first_name, last_name, email_address, image_url} = event.data;
+    await User.findByIdAndUpdate(id, {
+      name: `${first_name ?? ""} ${last_name ?? ""}`,
+      email: email_addresses?.[0]?.email_address,
+      imageUrl: image_url,
+    });
+  }
+);
 
-        const userData = {
-            _id : id,
-            name : first_name + " " + last_name,
-            email : email_address[0].email_address,
-            imageUrl : image_url
-        }
-        await connectDB();
-        await user.findByIdAndUpdate(id, userData);
-    }
-)
-
-//Inngest Fun to delete user data
-
+// ✅ DELETE USER
 export const syncUserDeletion = inngest.createFunction(
-    {
-        id: "delete-User-from-Clerk",
-    },
-    { event: "clerk/user.deleted" },
-    async ({ event }) => {
-        const {id} = event.data;
+  { id: "pen-precision-sync-user-delete" },
+  { event: "clerk/user.deleted" },
+  async ({ event }) => {
+    const { id } = event.data;
 
-        await connectDB();
-        await user.findByIdAndDelete(id);
-    }
+    await connectDB();
+    await User.findByIdAndDelete(id);
+  }
 );
