@@ -1,24 +1,18 @@
 import { Inngest } from "inngest";
 import connectDB from "./db";
-import User from "./models/User"; // ✅ make sure this path is correct
+import User from "./models/User";
 
-// Create Inngest client
 export const inngest = new Inngest({
   id: "pen-precision-next",
 });
 
-// ✅ CREATE USER
+// CREATE
 export const syncUserCreation = inngest.createFunction(
-  { id: "pen-precision-sync-user-create" },
+  { id: "pen-precision/Sync-User-from-Clerk" },
   { event: "clerk/user.created" },
   async ({ event }) => {
-    const {
-      id,
-      first_name,
-      last_name,
-      email_addresses,
-      image_url,
-    } = event.data;
+    const { id, first_name, last_name, email_addresses, image_url } =
+      event.data;
 
     await connectDB();
 
@@ -31,18 +25,13 @@ export const syncUserCreation = inngest.createFunction(
   }
 );
 
-// ✅ UPDATE USER
+// UPDATE
 export const syncUserUpdation = inngest.createFunction(
-  { id: "pen-precision-sync-user-update" },
+  { id: "pen-precision/Update-User-from-Clerk" },
   { event: "clerk/user.updated" },
   async ({ event }) => {
-    const {
-      id,
-      first_name,
-      last_name,
-      email_addresses,
-      image_url,
-    } = event.data;
+    const { id, first_name, last_name, email_addresses, image_url } =
+      event.data;
 
     await connectDB();
 
@@ -54,14 +43,12 @@ export const syncUserUpdation = inngest.createFunction(
   }
 );
 
-// ✅ DELETE USER
+// DELETE
 export const syncUserDeletion = inngest.createFunction(
-  { id: "pen-precision-sync-user-delete" },
+  { id: "pen-precision/Delete-User-from-Clerk" },
   { event: "clerk/user.deleted" },
   async ({ event }) => {
-    const { id } = event.data;
-
     await connectDB();
-    await User.findByIdAndDelete(id);
+    await User.findByIdAndDelete(event.data.id);
   }
 );

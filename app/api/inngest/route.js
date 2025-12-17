@@ -1,15 +1,14 @@
+export const runtime = "nodejs";
+
 import { serve } from "inngest/next";
 import {
   inngest,
   syncUserCreation,
-  syncUserDeletion,
   syncUserUpdation,
+  syncUserDeletion,
 } from "@/config/inngest";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
-export const { GET, POST, PUT } = serve({
+export const { GET, POST } = serve({
   client: inngest,
   functions: [
     syncUserCreation,
